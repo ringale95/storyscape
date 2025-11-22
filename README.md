@@ -1,80 +1,159 @@
-# CSYE6200 — Concepts of Object Oriented Design
+# **StoryScape — Full-Stack Content & Subscription Platform**
 
+**CSYE6200 — Concepts of Object-Oriented Design**
 Northeastern University — College of Engineering
-
 Professor: Daniel Peters
 
 ---
 
-## Overview
+## **Overview**
 
-This repository contains a Spring Boot backend and a React + TypeScript frontend scaffolded with Vite. It is used for course assignments and projects for CSYE6200.
+StoryScape is a full-stack platform where users can **create, publish, and read content** while browsing a **personalized feed** driven by tags, user interests, connections, and paid visibility features.
+
+On the business side, StoryScape includes a **complete product catalog**, **tier-based configurations**, **subscription management**, and a **billing engine** that generates **monthly invoices** for purchased products such as premium visibility, advertisement slots, and private channels.
+
+This repository contains:
+
+* **Spring Boot backend**
+* **React + TypeScript frontend (Vite)**
+* **MySQL database schema**
+
+The project demonstrates clean **Object-Oriented Design**, modular architecture, and real-world features such as JWT authentication, configurable pricing, and automated billing.
 
 ---
 
-## Requirements
+## **Key Features**
 
-- Java 11+ (for the backend)
-- Node.js 16+ (for the frontend; use the version specified in `frontend/package.json` if present)
-- Git and GitHub account
-- Recommended IDE: IntelliJ IDEA, Eclipse, or VS Code
+### **User Authentication**
 
-If you use Eclipse, ensure you have the Git CLI or GitHub Desktop available to commit and push changes.
+* Register users with encrypted passwords
+* JWT-based login
+* Role/tier-based access (normal, core, other)
+
+### **Content Management**
+
+* Create, edit, delete blog posts
+* Tagging system (`tags`, `content_tags`)
+* Personalized feed using `feed_records`
+
+### **Product & Subscription System**
+
+* Product catalog (`product_catalog`)
+* Tier-based pricing via `product_configurations`
+* Promotions & discounts
+* User purchases stored in `subscriptions`
+
+### **Billing Engine**
+
+* Monthly cron job to generate invoices
+* Invoice + invoice line items stored in DB
+* Email notifications on invoice generation
+
+### **Notifications**
+
+* System-generated messages for posts, purchases, promotions
 
 ---
 
-## Setup & Run (quick)
+## **Tech Stack**
 
-Backend (Spring Boot / Maven):
+### **Backend**
+
+* Java 17+
+* Spring Boot
+* Spring Data JPA
+* Spring Security (JWT)
+* MySQL
+* Maven
+
+### **Frontend**
+
+* React + TypeScript
+* Vite
+* Axios
+* React Router DOM
+
+---
+
+## **Requirements**
+
+* Java 17+
+* Node.js 16+
+* MySQL 8+
+* Git / GitHub
+* Preferred IDE: IntelliJ or VS Code
+
+---
+
+## **Setup & Run**
+
+### **Backend — Spring Boot**
+
+From repository root:
 
 ```bash
-# from repository root
 cd backend
-# use the included wrapper
 ./mvnw spring-boot:run
 ```
 
-To build a runnable JAR:
+To build a standalone JAR:
 
 ```bash
-cd backend
 ./mvnw clean package
 java -jar target/*.jar
 ```
 
-Frontend (React + Vite):
+---
+
+### **Frontend — React + Vite**
 
 ```bash
-# from repository root
 cd frontend
-npm install        # or pnpm install / yarn
-npm run dev        # start dev server (Vite)
-npm run build      # build production bundle
+npm install
+npm run dev     # start dev server
+npm run build   # create production bundle
 ```
 
 ---
 
-## Development & Submission Notes
+## **Folder Structure**
 
-- Commit code to the `main` branch per course instructions.
-- Ensure GitHub Actions (CI) pass after pushing; failing checks may affect grading.
-- Keep sensitive values out of the repo — use `.env` files locally and do not commit them.
-
-If you need help with GitHub or submissions, contact your TA.
-
----
-
-## Frontend (brief)
-
-The frontend is a React + TypeScript project using Vite for fast dev rebuilds. The project includes basic ESLint configuration. For production-ready linting, consider enabling type-aware linting rules and the official React/Vite plugins — see Vite and React docs for recommended plugins and rules.
-
-Useful links:
-
-- Vite: https://vitejs.dev/
-- React: https://reactjs.org/
+```
+backend/
+  src/main/java/… (controllers, services, repositories, entities)
+  src/main/resources/
+frontend/
+  src/pages/
+  src/components/
+  src/services/
+```
 
 ---
 
-## References
+## **Development Notes**
 
-- Cloning a repository: https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository
+* Push all work to the **main** branch per course rules.
+* Do not commit `.env` files or database credentials.
+* Run both backend and frontend concurrently during local development.
+* JWT tokens are generated after login and stored client-side.
+
+---
+
+## **Object-Oriented Design Used in This Project**
+
+* **Abstraction:** Separate modules for content, billing, products, and authentication
+* **Encapsulation:** Entities hide internal fields through getters/setters
+* **Inheritance:** Shared entity properties (timestamps, ids) modeled via base classes
+* **Polymorphism:** Different product types follow a unified interface
+* **Singleton Pattern:** Central Config/Pricing managers
+* **Factory Pattern:** ProductFactory for creating product instances based on type
+* **SOLID principles** throughout architecture
+
+---
+
+## **Useful Links**
+
+* React: [https://react.dev/](https://react.dev/)
+* Vite: [https://vitejs.dev/](https://vitejs.dev/)
+* Spring Boot Docs: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
+* MySQL Docs: [https://dev.mysql.com/doc/](https://dev.mysql.com/doc/)
