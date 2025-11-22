@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+/* Custom utilities used by the design system. Place in @layer utilities so @apply can use them. */
+@layer utilities {
+  /* utility that sets border color to the design system --border value (HSL components)
+     Use `border-border` in tailwind classes or via @apply. */
+  .border-border {
+    border-color: hsl(var(--border));
+  }
+}
+
+@layer base {
+  :root {
+    --background: 220 25% 97%;
+    --foreground: 230 35% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 230 35% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 35% 12%;
+
+    --primary: 230 55% 45%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 230 65% 60%;
+
+    --secondary: 220 15% 92%;
+    --secondary-foreground: 230 35% 12%;
+
+    --muted: 220 15% 92%;
+    --muted-foreground: 230 15% 45%;
+
+    --accent: 35 90% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 230 55% 45%;
+
+    --radius: 0.75rem;
+
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(230 55% 45%),
+      hsl(230 65% 60%)
+    );
+    --gradient-accent: linear-gradient(
+      135deg,
+      hsl(35 90% 60%),
+      hsl(25 90% 55%)
+    );
+    --gradient-subtle: linear-gradient(
+      180deg,
+      hsl(220 25% 97%),
+      hsl(230 30% 95%)
+    );
+
+    --shadow-elegant: 0 10px 40px -10px hsl(230 55% 45% / 0.2);
+    --shadow-soft: 0 4px 20px -4px hsl(230 20% 60% / 0.15);
+
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 230 35% 8%;
+    --foreground: 220 25% 97%;
+
+    --card: 230 30% 12%;
+    --card-foreground: 220 25% 97%;
+
+    --popover: 230 30% 12%;
+    --popover-foreground: 220 25% 97%;
+
+    --primary: 230 65% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 230 70% 70%;
+
+    --secondary: 230 25% 18%;
+    --secondary-foreground: 220 25% 97%;
+
+    --muted: 230 25% 18%;
+    --muted-foreground: 230 15% 60%;
+
+    --accent: 35 90% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 230 25% 18%;
+    --input: 230 25% 18%;
+    --ring: 230 65% 60%;
+
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(230 65% 60%),
+      hsl(230 70% 70%)
+    );
+    --gradient-accent: linear-gradient(
+      135deg,
+      hsl(35 90% 60%),
+      hsl(25 90% 55%)
+    );
+    --gradient-subtle: linear-gradient(
+      180deg,
+      hsl(230 35% 8%),
+      hsl(230 30% 10%)
+    );
+
+    --shadow-elegant: 0 10px 40px -10px hsl(230 65% 60% / 0.3);
+    --shadow-soft: 0 4px 20px -4px hsl(230 50% 40% / 0.2);
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    /* set default border color for elements that use borders to the design system value */
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
