@@ -1,0 +1,77 @@
+# macOS
+.DS_Store
+
+# Node / frontend (Vite + TypeScript)
+node_modules/
+**/node_modules/
+frontend/node_modules/
+frontend/.vite/
+frontend/dist/
+frontend/build/
+frontend/.cache/
+frontend/coverage/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Vite / dev
+.vite/
+dist/
+build/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Java / Maven (Spring Boot)
+target/
+**/target/
+backend/target/
+.mvn/wrapper/maven-wrapper.jar
+dependency-reduced-pom.xml
+release.properties
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+
+# Java build artifacts
+*.class
+*.jar
+*.war
+*.ear
+
+# IDEs and editors
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+out/
+
+# Logs
+*.log
+spring.log
+
+# OS generated
+Thumbs.db
+._*
+
+# Test / coverage
+coverage/
+coverage-final.json
+coverage-html-report/
+test-classes/
+generated-sources/
+
+# Docker / local overrides
+docker-compose.override.yml
+.env.docker
+
+# Misc
+*.swp
+.DS_Store
+
+# Optional: keep lock files (package-lock.json / pnpm-lock.yaml / yarn.lock) in repo
