@@ -1,0 +1,34 @@
+name: Deploy StoryScape Frontend
+
+on:
+  push:
+    branches:
+      - github-pages
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Build Vite project
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}   # BUILT-IN, no PAT needed
+          publish_dir: ./frontend/dist
+          publish_branch: gh-pages
