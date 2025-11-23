@@ -5,15 +5,19 @@ import lombok.ToString;
 
 import java.time.LocalDateTime;
 
+import edu.neu.csye6200.dto.UserRegisterDTO;
+
 @Entity
 @ToString
-@Table(name = "users",
-indexes = {@Index(name = "idx_user_username", columnList = "username")})
+@Table(name = "users", indexes = { @Index(name = "idx_user_username", columnList = "username") })
 public class User {
+
+    public User() {
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;  // or UUID if you want to match your schema
+    private long id; // or UUID if you want to match your schema
 
     @Column(nullable = false, unique = true, length = 40)
     private String username;
@@ -27,6 +31,14 @@ public class User {
 
     private String bio;
 
+    public User(UserRegisterDTO dto, String hashedPassword) {
+        this.username = dto.getUsername();
+        this.email = dto.getEmail();
+        this.passwordHash = hashedPassword;
+        this.bio = dto.getBio();
+        this.tier = Tier.valueOf(dto.getTier().toUpperCase());
+    }
+
     public void setTier(Tier tier) {
         this.tier = tier;
     }
@@ -37,16 +49,16 @@ public class User {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Tier tier;   // normal, other, core
+    private Tier tier = Tier.NORMAL; // normal, other, core
 
     @Column(nullable = false)
-    private String status; // ACTIVE, SUSPENDED, DELETED
+    private String status = "ACTIVE"; // ACTIVE, SUSPENDED, DELETED
 
     @Column(name = "followers_count")
-    private Integer followersCount;
+    private Integer followersCount = 0;
 
     @Column(name = "following_count")
-    private Integer followingCount;
+    private Integer followingCount = 0;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -54,6 +66,26 @@ public class User {
     @Column(name = "updated_at", updatable = false)
     private LocalDateTime updatedAt;
 
+    // Ensure default values and timestamps are set before persisting/updating
+    @PrePersist
+    protected void onCreate() {
+        if (this.tier == null)
+            this.tier = Tier.NORMAL;
+        if (this.status == null)
+            this.status = "ACTIVE";
+        if (this.followersCount == null)
+            this.followersCount = 0;
+        if (this.followingCount == null)
+            this.followingCount = 0;
+        if (this.createdAt == null)
+            this.createdAt = LocalDateTime.now();
+        this.updatedAt = this.createdAt;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
     @Override
     public String toString() {
@@ -113,7 +145,6 @@ public class User {
     public void setProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
     }
-
 
     public String getStatus() {
         return status;
