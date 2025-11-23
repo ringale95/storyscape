@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 3000,
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
-  base: '/ringale95',
+  base: '/storyscape/' ,
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
