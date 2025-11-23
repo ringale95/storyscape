@@ -4,31 +4,47 @@ on:
   push:
     branches:
       - github-pages
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
+      - name: Cache node modules and npm
+        uses: actions/cache@v4
+        with:
+          path: |
+            frontend/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
-        working-directory: ./frontend
-        run: npm install
+        run: npm ci --prefix frontend
 
       - name: Build Vite project
-        working-directory: ./frontend
-        run: npm run build
+        run: npm run build --prefix frontend
 
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}   # BUILT-IN, no PAT needed
-          publish_dir: ./frontend/dist
-          publish_branch: gh-pages
+          path: ./frontend/dist
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v1
