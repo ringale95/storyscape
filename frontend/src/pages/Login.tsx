@@ -47,7 +47,7 @@ const Login = () => {
           title: "Login successful!",
           description: "Welcome back to StoryScape",
         });
-        navigate("/");
+        navigate("/feed");
       } catch (error) {
         toast({
           title: "Login failed",
