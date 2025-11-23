@@ -41,15 +41,14 @@ const Login = () => {
     e.preventDefault();
 
     if (validateForm()) {
-      const token = await AuthService.login(formData.email, formData.password);
-      if (token) {
+      try {
+        await AuthService.login(formData.email, formData.password);
         toast({
           title: "Login successful!",
           description: "Welcome back to StoryScape",
         });
         navigate("/");
-      }
-      else {
+      } catch (error) {
         toast({
           title: "Login failed",
           description: "Invalid email or password.",
@@ -164,20 +163,6 @@ const Login = () => {
               {errors.password && (
                 <p className="text-sm text-destructive">{errors.password}</p>
               )}
-            </div>
-
-            {/* Remember Me */}
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="remember"
-                checked={formData.rememberMe}
-                onCheckedChange={(checked) =>
-                  handleInputChange("rememberMe", checked as boolean)
-                }
-              />
-              <Label htmlFor="remember" className="text-sm cursor-pointer">
-                Remember me
-              </Label>
             </div>
 
             {/* Submit Button */}
