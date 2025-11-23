@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { BookOpen, Eye, EyeOff } from "lucide-react";
 import registerIllustration from "@/assets/register-illustration.jpg";
+import { AuthService } from "@/lib/AuthService";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -36,15 +37,25 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (validateForm()) {
-      toast({
-        title: "Login successful!",
-        description: "Welcome back to StoryScape",
-      });
-      navigate("/");
+      const token = await AuthService.login(formData.email, formData.password);
+      if (token) {
+        toast({
+          title: "Login successful!",
+          description: "Welcome back to StoryScape",
+        });
+        navigate("/");
+      }
+      else {
+        toast({
+          title: "Login failed",
+          description: "Invalid email or password.",
+          variant: "destructive",
+        });
+      }
     }
   };
 

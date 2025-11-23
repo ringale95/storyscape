@@ -62,7 +62,7 @@ const Register = () => {
         title: "Registration successful!",
         description: "Welcome to StoryScape",
       });
-      navigate("/");
+      navigate("/login");
     }
   };
 
