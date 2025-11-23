@@ -41,10 +41,13 @@ jobs:
       - name: Build Vite project
         run: npm run build --prefix frontend
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v1
+      # NOTE: Using the official GitHub Pages actions caused a failure due to a
+      # deprecated dependency (actions/upload-artifact v3) on the hosted runner.
+      # Use the peaceiris action as a reliable workaround until the official
+      # actions are updated by GitHub.
+      - name: Deploy to gh-pages (temporary workaround)
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          path: ./frontend/dist
-
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
+          github_token: ${{ secrets.GH_PAGES_TOKEN }}
+          publish_dir: ./frontend/dist
+          publish_branch: github-pages
