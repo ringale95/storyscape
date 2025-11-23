@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 3000,
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
-  base: '/storyscape/' ,
+  base: mode === "production" ? '/storyscape/' : '/',
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
