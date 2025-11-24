@@ -7,12 +7,15 @@ import org.springframework.stereotype.Service;
 import edu.neu.csye6200.dto.LoginDTO;
 import edu.neu.csye6200.dto.UserRegisterDTO;
 import edu.neu.csye6200.entity.User;
+import edu.neu.csye6200.factory.UserFactory;
 
 @Service
 public class AuthService {
 
     @Autowired
     private UserService userService;
+
+    private UserFactory userFactory = UserFactory.getInstance();
 
     public boolean authenticate(LoginDTO loginDTO) {
         User user = userService.findByEmail(loginDTO.getEmail());
@@ -32,12 +35,7 @@ public class AuthService {
             throw new IllegalArgumentException("User already exists");
         }
 
-        // bcrypt hash
-        String hashedPassword = BCrypt.hashpw(dto.getPassword(), BCrypt.gensalt(12));
-
-        // pass hashed password to entity
-        User newUser = new User(dto, hashedPassword);
-
+        User newUser = userFactory.createUserFromRegistration(dto);
         return userService.saveUser(newUser);
     }
 }
