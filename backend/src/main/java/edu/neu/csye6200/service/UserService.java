@@ -1,5 +1,7 @@
 package edu.neu.csye6200.service;
 
+import edu.neu.csye6200.dto.UpdateUserDTO;
+import edu.neu.csye6200.entity.Tier;
 import edu.neu.csye6200.entity.User;
 import edu.neu.csye6200.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -30,6 +32,40 @@ public class UserService implements UserDetailsService {
 
     public User saveUser(User newUser) {
         return userRepository.save(newUser);
+    }
+
+
+    @Transactional
+    public User updateUser(Long userId, UpdateUserDTO dto) {
+        User existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        // Update only non-null fields (partial update pattern)
+        if (dto.getFirstName() != null && !dto.getFirstName().isEmpty()) {
+            existingUser.setFirstName(dto.getFirstName());
+        }
+
+        if (dto.getLastName() != null && !dto.getLastName().isEmpty()) {
+            existingUser.setLastName(dto.getLastName());
+        }
+
+        if (dto.getBio() != null) {
+            existingUser.setBio(dto.getBio());
+        }
+
+        if (dto.getTier() != null && !dto.getTier().isEmpty()) {
+            try {
+                existingUser.setTier(Tier.valueOf(dto.getTier().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Invalid tier value: " + dto.getTier());
+            }
+        }
+
+        if (dto.getWalletCents() != null && dto.getWalletCents() >= 0 && dto.getWalletCents() >= existingUser.getWalletCents()) {
+            existingUser.setWalletCents(dto.getWalletCents());
+        }
+
+        return userRepository.save(existingUser);
     }
 
     @Override

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import edu.neu.csye6200.dto.UserRegisterDTO;
 
@@ -12,12 +14,20 @@ import edu.neu.csye6200.dto.UserRegisterDTO;
 @Table(name = "users", indexes = { @Index(name = "idx_user_email", columnList = "email") })
 public class User {
 
-    public User() {
+    public User() {}
+
+    public User(UserRegisterDTO dto, String hashedPassword) {
+        this.firstName = dto.getFirstName();
+        this.lastName = dto.getLastName();
+        this.email = dto.getEmail();
+        this.passwordHash = hashedPassword;
+        this.bio = dto.getBio();
+        this.tier = Tier.valueOf(dto.getTier().toUpperCase());
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id; // or UUID if you want to match your schema
+    private long id;
 
     @Column(name = "first_name", nullable = false, length = 50)
     private String firstName;
@@ -34,29 +44,16 @@ public class User {
 
     private String bio;
 
-    public User(UserRegisterDTO dto, String hashedPassword) {
-        this.firstName = dto.getFirstName();
-        this.lastName = dto.getLastName();
-        this.email = dto.getEmail();
-        this.passwordHash = hashedPassword;
-        this.bio = dto.getBio();
-        this.tier = Tier.valueOf(dto.getTier().toUpperCase());
-    }
-
-    public void setTier(Tier tier) {
-        this.tier = tier;
-    }
-
     @ToString.Exclude
     @Column(name = "profile_image_url")
     private String profileImageUrl;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Tier tier = Tier.NORMAL; // normal, other, core
+    private Tier tier = Tier.NORMAL;
 
     @Column(nullable = false)
-    private String status = "ACTIVE"; // ACTIVE, SUSPENDED, DELETED
+    private String status = "ACTIVE";
 
     @Column(name = "followers_count")
     private Integer followersCount = 0;
@@ -70,38 +67,20 @@ public class User {
     @Column(name = "updated_at", updatable = false)
     private LocalDateTime updatedAt;
 
-    // Ensure default values and timestamps are set before persisting/updating
-    @PrePersist
-    protected void onCreate() {
-        if (this.tier == null)
-            this.tier = Tier.NORMAL;
-        if (this.status == null)
-            this.status = "ACTIVE";
-        if (this.followersCount == null)
-            this.followersCount = 0;
-        if (this.followingCount == null)
-            this.followingCount = 0;
-        if (this.createdAt == null)
-            this.createdAt = LocalDateTime.now();
-        this.updatedAt = this.createdAt;
-    }
+    @Column(name = "wallet_cents", nullable = false)
+    private Long walletCents = 0L;
 
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+    // ================================
+    //   INVOICES RELATIONSHIP
+    // ================================
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<Invoice> invoices = new ArrayList<>();
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", email='" + email + '\'' +
-                ", tier='" + tier + '\'' +
-                ", status='" + status + '\'' +
-                '}';
-    }
+
+    // ================================
+    //   GETTERS & SETTERS
+    // ================================
 
     public long getId() {
         return id;
@@ -143,6 +122,14 @@ public class User {
         this.passwordHash = passwordHash;
     }
 
+    public Long getWalletCents() {
+        return walletCents;
+    }
+    
+    public void setWalletCents(Long walletCents) {
+        this.walletCents = walletCents;
+    }
+
     public String getBio() {
         return bio;
     }
@@ -157,6 +144,14 @@ public class User {
 
     public void setProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
+    }
+
+    public Tier getTier() {
+        return tier;
+    }
+
+    public void setTier(Tier tier) {
+        this.tier = tier;
     }
 
     public String getStatus() {
@@ -197,5 +192,39 @@ public class User {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public List<Invoice> getInvoices() {
+        return invoices;
+    }
+
+    public void setInvoices(List<Invoice> invoices) {
+        this.invoices = invoices;
+    }
+
+    public void addInvoice(Invoice invoice) {
+        invoices.add(invoice);
+    }
+
+    public void removeInvoice(Invoice invoice) {
+        invoices.remove(invoice);
+    }
+
+    // ================================
+    //   LIFECYCLE HOOKS
+    // ================================
+    @PrePersist
+    protected void onCreate() {
+        if (this.tier == null) this.tier = Tier.NORMAL;
+        if (this.status == null) this.status = "ACTIVE";
+        if (this.followersCount == null) this.followersCount = 0;
+        if (this.followingCount == null) this.followingCount = 0;
+        if (this.createdAt == null) this.createdAt = LocalDateTime.now();
+        this.updatedAt = this.createdAt;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }
