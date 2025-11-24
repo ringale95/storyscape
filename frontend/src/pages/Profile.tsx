@@ -22,6 +22,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { getUserProfile, topUpWallet } from "@/services/api";
+import Layout from "@/components/Layout";
 
 interface UserProfile {
   id: number;
@@ -156,7 +157,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-background-secondary">
+    <Layout userId={profile.id}>
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-6 animate-fade-in">
           {/* User Details Card */}
@@ -306,7 +307,7 @@ const Profile = () => {
           </Card>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

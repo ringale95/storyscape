@@ -7,6 +7,7 @@ import LoadingSkeleton from "@/components/LoadingSkeleton";
 import EmptyState from "@/components/EmptyState";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import Layout from "@/components/Layout";
 
 export interface Invoice {
   id: number;
@@ -91,7 +92,7 @@ const Invoices = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-background-secondary">
+    <Layout userId={userId ? parseInt(userId) : undefined}>
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header Section */}
         <div className="mb-8 animate-fade-in">
@@ -138,7 +139,7 @@ const Invoices = () => {
           </>
         )}
       </div>
-    </div>
+    </Layout>
   );
 };
 

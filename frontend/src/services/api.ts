@@ -1,7 +1,7 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 const getAuthHeaders = () => {
-  const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyYXZpbmEuaW5nOTUrZGV2QGdtYWlsLmNvbSIsImlhdCI6MTc2Mzk1MzA5MCwiZXhwIjoxNzYzOTU2NjkwfQ.rdYNMpkWdHcgUenvoeKI4bsta4qNG5uF4PcDxvF5Vbc"; //localStorage.getItem("token");
+  const token = localStorage.getItem("jwt_token");
   return {
     "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
