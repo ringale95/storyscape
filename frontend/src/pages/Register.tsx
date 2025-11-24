@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { BookOpen, Eye, EyeOff } from "lucide-react";
 import registerIllustration from "@/assets/register-illustration.jpg";
+import { AuthService } from "@/lib/AuthService";
+import { RegisterDTO } from "@/dto/RegisterDTO";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -15,7 +17,7 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    agreeToTerms: false,
+    bio: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -23,11 +25,34 @@ const Register = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // TanStack Query mutation for registration
+  const registerMutation = useMutation({
+    mutationFn: (data: RegisterDTO) => AuthService.register(data),
+    onSuccess: () => {
+      toast({
+        title: "Registration successful!",
+        description: "Welcome to StoryScape. Please login to continue.",
+      });
+      navigate("/login");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Registration failed",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.firstName.trim()) {
       newErrors.firstName = "First name is required";
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = "Last name is required";
     }
 
     if (!formData.email.trim()) {
@@ -46,10 +71,6 @@ const Register = () => {
       newErrors.confirmPassword = "Passwords do not match";
     }
 
-    if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = "You must agree to the terms and conditions";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -58,11 +79,18 @@ const Register = () => {
     e.preventDefault();
 
     if (validateForm()) {
-      toast({
-        title: "Registration successful!",
-        description: "Welcome to StoryScape",
+      // Combine firstName and lastName to create bio
+      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+      const bio = formData.bio || `Hi, I'm ${fullName}!`;
+
+      registerMutation.mutate({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        bio: bio,
+        tier: "NORMAL",
       });
-      navigate("/login");
     }
   };
 
@@ -149,7 +177,11 @@ const Register = () => {
                   onChange={(e) =>
                     handleInputChange("lastName", e.target.value)
                   }
+                  className={errors.lastName ? "border-destructive" : ""}
                 />
+                {errors.lastName && (
+                  <p className="text-sm text-destructive">{errors.lastName}</p>
+                )}
               </div>
             </div>
 
@@ -240,8 +272,11 @@ const Register = () => {
               type="submit"
               className="w-full bg-gradient-primary hover:opacity-90 transition-opacity shadow-soft"
               size="lg"
+              disabled={registerMutation.isPending}
             >
-              Create Account
+              {registerMutation.isPending
+                ? "Creating Account..."
+                : "Create Account"}
             </Button>
 
             {/* Login Link */}

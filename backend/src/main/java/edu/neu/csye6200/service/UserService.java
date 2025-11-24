@@ -20,17 +20,12 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public User getUserByID(Long id) {
-        User u1 = userRepository.findById(id).orElse(null);
-        u1.setUsername("YOYI");
-        return u1;
+        return userRepository.findById(id).orElse(null);
     }
 
     @Transactional
     public User findByEmail(String email) {
-        return userRepository.findAll().stream()
-                .filter(user -> user.getEmail().equals(email))
-                .findFirst()
-                .orElse(null);
+        return userRepository.findByEmail(email);
     }
 
     public User saveUser(User newUser) {

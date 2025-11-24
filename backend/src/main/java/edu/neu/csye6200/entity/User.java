@@ -9,7 +9,7 @@ import edu.neu.csye6200.dto.UserRegisterDTO;
 
 @Entity
 @ToString
-@Table(name = "users", indexes = { @Index(name = "idx_user_username", columnList = "username") })
+@Table(name = "users", indexes = { @Index(name = "idx_user_email", columnList = "email") })
 public class User {
 
     public User() {
@@ -19,8 +19,11 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id; // or UUID if you want to match your schema
 
-    @Column(nullable = false, unique = true, length = 40)
-    private String username;
+    @Column(name = "first_name", nullable = false, length = 50)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false, length = 50)
+    private String lastName;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -32,7 +35,8 @@ public class User {
     private String bio;
 
     public User(UserRegisterDTO dto, String hashedPassword) {
-        this.username = dto.getUsername();
+        this.firstName = dto.getFirstName();
+        this.lastName = dto.getLastName();
         this.email = dto.getEmail();
         this.passwordHash = hashedPassword;
         this.bio = dto.getBio();
@@ -91,7 +95,8 @@ public class User {
     public String toString() {
         return "User{" +
                 "id=" + id +
-                ", username='" + username + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
                 ", tier='" + tier + '\'' +
                 ", status='" + status + '\'' +
@@ -106,12 +111,20 @@ public class User {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getEmail() {
