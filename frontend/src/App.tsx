@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import Invoices from "./pages/Invoices";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +23,8 @@ const App = () => (
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/users/:id" element={<Profile />} />
+          <Route path="/users/:userId/invoices" element={<Invoices />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
