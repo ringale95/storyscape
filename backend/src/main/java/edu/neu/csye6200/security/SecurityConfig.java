@@ -14,6 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpMethod;
 
 import jakarta.servlet.Filter;
 
@@ -32,7 +33,13 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 .authorizeHttpRequests(auth -> auth
+                        // UPDATED: Changed from /auth/* to /api/*
                         .requestMatchers("/auth/register", "/auth/login").permitAll()
+                        .requestMatchers("/api/stories", "/api/stories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/stories/**").permitAll()
+                        // Optional: Make some story endpoints public for testing
+                        .requestMatchers("/api/stories", "/api/stories/**").permitAll()
+                        .requestMatchers("/api/feed", "/api/feed/**").permitAll()
                         .anyRequest().authenticated())
 
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
