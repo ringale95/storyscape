@@ -1,5 +1,7 @@
 package edu.neu.csye6200.dto;
 
+import edu.neu.csye6200.entity.*;
+
 import java.math.BigDecimal;
 
 public class ProductDTO {

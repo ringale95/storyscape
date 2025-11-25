@@ -2,6 +2,7 @@ package edu.neu.csye6200.factory;
 
 import edu.neu.csye6200.dto.ProductDTO;
 import org.springframework.stereotype.Component;
+import edu.neu.csye6200.entity.*;
 
 import java.math.BigDecimal;
 
