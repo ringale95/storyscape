@@ -14,7 +14,8 @@ import edu.neu.csye6200.dto.UserRegisterDTO;
 @Table(name = "users", indexes = { @Index(name = "idx_user_email", columnList = "email") })
 public class User {
 
-    public User() {}
+    public User() {
+    }
 
     public User(UserRegisterDTO dto, String hashedPassword) {
         this.firstName = dto.getFirstName();
@@ -71,15 +72,14 @@ public class User {
     private Long walletCents = 0L;
 
     // ================================
-    //   INVOICES RELATIONSHIP
+    // INVOICES RELATIONSHIP
     // ================================
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private List<Invoice> invoices = new ArrayList<>();
 
-
     // ================================
-    //   GETTERS & SETTERS
+    // GETTERS & SETTERS
     // ================================
 
     public long getId() {
@@ -125,7 +125,7 @@ public class User {
     public Long getWalletCents() {
         return walletCents;
     }
-    
+
     public void setWalletCents(Long walletCents) {
         this.walletCents = walletCents;
     }
@@ -211,15 +211,20 @@ public class User {
     }
 
     // ================================
-    //   LIFECYCLE HOOKS
+    // LIFECYCLE HOOKS
     // ================================
     @PrePersist
     protected void onCreate() {
-        if (this.tier == null) this.tier = Tier.NORMAL;
-        if (this.status == null) this.status = "ACTIVE";
-        if (this.followersCount == null) this.followersCount = 0;
-        if (this.followingCount == null) this.followingCount = 0;
-        if (this.createdAt == null) this.createdAt = LocalDateTime.now();
+        if (this.tier == null)
+            this.tier = Tier.NORMAL;
+        if (this.status == null)
+            this.status = "ACTIVE";
+        if (this.followersCount == null)
+            this.followersCount = 0;
+        if (this.followingCount == null)
+            this.followingCount = 0;
+        if (this.createdAt == null)
+            this.createdAt = LocalDateTime.now();
         this.updatedAt = this.createdAt;
     }
 
@@ -228,3 +233,4 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 }
+

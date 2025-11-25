@@ -17,9 +17,10 @@ public class Invoice {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Reference to subscription
-    @Column(name = "subscription_id", nullable = false)
-    private Long subscriptionId;
+    // Direct relationship to Payment (now possible with Single Table Inheritance)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
 
     @Column(name = "date_from", nullable = false)
     private LocalDate dateFrom;
@@ -28,7 +29,7 @@ public class Invoice {
     private LocalDate dateTo;
 
     @Column(nullable = false)
-    private Double amount;
+    private long amount;
 
     @Column(length = 255)
     private String description;
@@ -59,10 +60,10 @@ public class Invoice {
     public Invoice() {
     }
 
-    public Invoice(Long subscriptionId, LocalDate dateFrom, LocalDate dateTo,
-            Double amount, String description, String pdfUrl) {
-
-        this.subscriptionId = subscriptionId;
+    public Invoice(User user, Payment payment, LocalDate dateFrom, LocalDate dateTo, long amount,
+                   String description, String pdfUrl) {
+        this.user = user;
+        this.payment = payment;
         this.dateFrom = dateFrom;
         this.dateTo = dateTo;
         this.amount = amount;
@@ -74,14 +75,6 @@ public class Invoice {
 
     public Long getId() {
         return id;
-    }
-
-    public Long getSubscriptionId() {
-        return subscriptionId;
-    }
-
-    public void setSubscriptionId(Long subscriptionId) {
-        this.subscriptionId = subscriptionId;
     }
 
     public LocalDate getDateFrom() {
@@ -100,11 +93,11 @@ public class Invoice {
         this.dateTo = dateTo;
     }
 
-    public Double getAmount() {
+    public long getAmount() {
         return amount;
     }
 
-    public void setAmount(Double amount) {
+    public void setAmount(long amount) {
         this.amount = amount;
     }
 
@@ -139,4 +132,13 @@ public class Invoice {
     public void setUser(User user) {
         this.user = user;
     }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
 }
+
