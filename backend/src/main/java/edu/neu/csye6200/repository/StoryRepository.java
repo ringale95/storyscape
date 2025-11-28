@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface StoryRepository extends JpaRepository<Story, Long> {
@@ -84,4 +85,13 @@ public interface StoryRepository extends JpaRepository<Story, Long> {
      * Count published stories by author
      */
     long countByAuthorIdAndStatus(Long authorId, StoryStatus status);
+
+    /**
+     * Find the most recent story for a user, ordered by creation date descending.
+     * 
+     * @param userId The ID of the user
+     * @return Optional containing the most recent story, or empty if none found
+     */
+    @Query("SELECT s FROM Story s WHERE s.author.id = :userId ORDER BY s.createdAt DESC")
+    Optional<Story> findTopByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 }

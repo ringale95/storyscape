@@ -1,6 +1,7 @@
 package edu.neu.csye6200.controller;
 
 import edu.neu.csye6200.dto.StoryDTO;
+import edu.neu.csye6200.dto.StoryResponseDTO;
 import edu.neu.csye6200.entity.Story;
 import edu.neu.csye6200.entity.User;
 import edu.neu.csye6200.repository.UserRepository;
@@ -39,6 +40,14 @@ public class StoryController {
             Authentication authentication) {
 
         try {
+            // Check if user is authenticated
+            if (authentication == null || !authentication.isAuthenticated()) {
+                Map<String, Object> error = new HashMap<>();
+                error.put("success", false);
+                error.put("message", "Authentication required. Please provide a valid JWT token.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+            }
+
             // Extract email from JWT token
             String email = authentication.getName();
 
@@ -50,10 +59,13 @@ public class StoryController {
 
             Story story = storyService.createStory(dto, user.getId());
 
+            // Convert to response DTO with limited information
+            StoryResponseDTO storyResponse = StoryResponseDTO.fromStory(story);
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Story created successfully");
-            response.put("story", story);
+            response.put("story", storyResponse);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {

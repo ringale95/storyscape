@@ -20,7 +20,7 @@ public class Story {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private User author;
 
     @Column(nullable = false, length = 200)
@@ -47,11 +47,7 @@ public class Story {
     private Integer likeCount = 0;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "story_tags",
-            joinColumns = @JoinColumn(name = "story_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
+    @JoinTable(name = "story_tags", joinColumns = @JoinColumn(name = "story_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private Set<Tag> tags = new HashSet<>();
 
     @Column(nullable = false)
@@ -149,16 +145,17 @@ public class Story {
         LocalDateTime referenceDate = publishedAt != null ? publishedAt : createdAt;
         long daysSincePublished = java.time.Duration.between(
                 referenceDate,
-                LocalDateTime.now()
-        ).toDays();
+                LocalDateTime.now()).toDays();
         score += Math.max(0, 100 - daysSincePublished);
 
         // Engagement score
         score += (viewCount * 0.1) + (likeCount * 2);
 
         // Featured/boosted content
-        if (isFeatured) score += 500;
-        if (isBoosted) score += 200;
+        if (isFeatured)
+            score += 500;
+        if (isBoosted)
+            score += 200;
 
         return score;
     }
@@ -195,7 +192,8 @@ public class Story {
      * Check if story has a specific tag
      */
     public boolean hasTag(String tagName) {
-        if (tags == null) return false;
+        if (tags == null)
+            return false;
         return tags.stream()
                 .anyMatch(tag -> tag.getName().equalsIgnoreCase(tagName));
     }
