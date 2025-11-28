@@ -8,72 +8,27 @@ import EmptyState from "@/components/EmptyState";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import Layout from "@/components/Layout";
-
-export interface Invoice {
-  id: number;
-  subscriptionId: number;
-  dateFrom: string;
-  dateTo: string;
-  amount: number;
-  description: string;
-  createdAt: string;
-  pdfUrl: string;
-}
-
-// Mock API call - replace with actual API
-const fetchInvoices = async (userId: string): Promise<Invoice[]> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Mock data
-  return [
-    {
-      id: 1001,
-      subscriptionId: 5421,
-      dateFrom: "2025-01-01",
-      dateTo: "2025-01-31",
-      amount: 49.99,
-      description: "Premium Featured Post - January 2025",
-      createdAt: "2025-02-01",
-      pdfUrl: "#"
-    },
-    {
-      id: 1002,
-      subscriptionId: 5422,
-      dateFrom: "2025-02-01",
-      dateTo: "2025-02-28",
-      amount: 99.99,
-      description: "Analytics Pack Pro - February 2025",
-      createdAt: "2025-03-01",
-      pdfUrl: "#"
-    },
-    {
-      id: 1003,
-      subscriptionId: 5421,
-      dateFrom: "2025-02-01",
-      dateTo: "2025-02-28",
-      amount: 49.99,
-      description: "Premium Featured Post - February 2025",
-      createdAt: "2025-03-01",
-      pdfUrl: "#"
-    }
-  ];
-};
+import { getInvoices, Invoice } from "@/services/api";
 
 const Invoices = () => {
   const { userId } = useParams<{ userId: string }>();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: invoices, isLoading, error } = useQuery({
+  const {
+    data: invoices,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["invoices", userId],
-    queryFn: () => fetchInvoices(userId!),
+    queryFn: () => getInvoices(parseInt(userId!)),
     enabled: !!userId,
   });
 
-  const filteredInvoices = invoices?.filter(invoice => 
-    invoice.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    invoice.subscriptionId.toString().includes(searchTerm) ||
-    invoice.id.toString().includes(searchTerm)
+  const filteredInvoices = invoices?.filter(
+    (invoice) =>
+      invoice.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      invoice.subscriptionId.toString().includes(searchTerm) ||
+      invoice.id.toString().includes(searchTerm)
   );
 
   if (isLoading) {
@@ -84,7 +39,9 @@ const Invoices = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-background-secondary flex items-center justify-center p-6">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-destructive mb-2">Error Loading Invoices</h2>
+          <h2 className="text-2xl font-bold text-destructive mb-2">
+            Error Loading Invoices
+          </h2>
           <p className="text-muted-foreground">Please try again later.</p>
         </div>
       </div>

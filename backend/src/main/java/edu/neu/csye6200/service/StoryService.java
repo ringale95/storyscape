@@ -545,4 +545,12 @@ public class StoryService {
         public java.util.Map<String, Long> getStoriesByType() { return storiesByType; }
         public java.util.Map<StoryVisibility, Long> getStoriesByVisibility() { return storiesByVisibility; }
     }
+
+    public void featureStory(Long storyId) {
+        Story story = storyRepository.findById(storyId)
+                .orElseThrow(() -> new RuntimeException("Story not found with id: " + storyId));
+
+        story.setIsFeatured(true);
+        storyRepository.save(story);
+    }
 }

@@ -78,6 +78,12 @@ public class User {
     @ToString.Exclude
     private List<Invoice> invoices = new ArrayList<>();
 
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_subscriptions", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "product_configuration_id"))
+    @ToString.Exclude
+    private List<ProductConfiguration> subscriptions = new ArrayList<>();
+
     // ================================
     // GETTERS & SETTERS
     // ================================
@@ -214,6 +220,24 @@ public class User {
         invoices.remove(invoice);
     }
 
+    public List<ProductConfiguration> getSubscriptions() {
+        return subscriptions;
+    }
+
+    public void setSubscriptions(List<ProductConfiguration> subscriptions) {
+        this.subscriptions = subscriptions;
+    }
+
+    public void addSubscription(ProductConfiguration productConfiguration) {
+        if (!subscriptions.contains(productConfiguration)) {
+            subscriptions.add(productConfiguration);
+        }
+    }
+
+    public void removeSubscription(ProductConfiguration productConfiguration) {
+        subscriptions.remove(productConfiguration);
+    }
+
     // ================================
     // LIFECYCLE HOOKS
     // ================================
@@ -237,4 +261,3 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 }
-

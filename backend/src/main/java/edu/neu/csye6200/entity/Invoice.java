@@ -12,15 +12,17 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Relationship to User
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Direct relationship to Payment (now possible with Single Table Inheritance)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_id")
-    private Payment payment;
+    // Payment information stored directly (immutable snapshot)
+    // payment_id stored as reference ID (not foreign key) for historical reference
+    @Column(name = "payment_id")
+    private Long paymentId;
+
+    @Column(name = "payment_type", length = 20)
+    private String paymentType; // "SUBSCRIPTION" or "PAYG"
 
     @Column(name = "date_from", nullable = false)
     private LocalDate dateFrom;
@@ -34,13 +36,9 @@ public class Invoice {
     @Column(length = 255)
     private String description;
 
-    @Column(name = "pdf_url")
-    private String pdfUrl;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    // Only updated automatically on update events
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
@@ -60,19 +58,18 @@ public class Invoice {
     public Invoice() {
     }
 
-    public Invoice(User user, Payment payment, LocalDate dateFrom, LocalDate dateTo, long amount,
-                   String description, String pdfUrl) {
+    public Invoice(User user, Long paymentId, String paymentType, LocalDate dateFrom, LocalDate dateTo, long amount,
+            String description) {
         this.user = user;
-        this.payment = payment;
+        this.paymentId = paymentId;
+        this.paymentType = paymentType;
         this.dateFrom = dateFrom;
         this.dateTo = dateTo;
         this.amount = amount;
         this.description = description;
-        this.pdfUrl = pdfUrl;
     }
 
     // Getters and Setters
-
     public Long getId() {
         return id;
     }
@@ -101,14 +98,6 @@ public class Invoice {
         this.amount = amount;
     }
 
-    public String getPdfUrl() {
-        return pdfUrl;
-    }
-
-    public void setPdfUrl(String pdfUrl) {
-        this.pdfUrl = pdfUrl;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -133,12 +122,19 @@ public class Invoice {
         this.user = user;
     }
 
-    public Payment getPayment() {
-        return payment;
+    public Long getPaymentId() {
+        return paymentId;
     }
 
-    public void setPayment(Payment payment) {
-        this.payment = payment;
+    public void setPaymentId(Long paymentId) {
+        this.paymentId = paymentId;
+    }
+
+    public String getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(String paymentType) {
+        this.paymentType = paymentType;
     }
 }
-

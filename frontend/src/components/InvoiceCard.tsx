@@ -2,13 +2,18 @@ import { Download, Calendar, DollarSign, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Invoice } from "@/pages/Invoices";
+import { Invoice, downloadInvoicePdf } from "@/services/api";
+import { useParams } from "react-router-dom";
+import { useState } from "react";
 
 interface InvoiceCardProps {
   invoice: Invoice;
 }
 
 const InvoiceCard = ({ invoice }: InvoiceCardProps) => {
+  const { userId } = useParams<{ userId: string }>();
+  const [isDownloading, setIsDownloading] = useState(false);
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -24,9 +29,17 @@ const InvoiceCard = ({ invoice }: InvoiceCardProps) => {
     }).format(amount);
   };
 
-  const handleDownload = () => {
-    if (invoice.pdfUrl && invoice.pdfUrl !== "#") {
-      window.open(invoice.pdfUrl, "_blank");
+  const handleDownload = async () => {
+    if (!userId || isDownloading) return;
+
+    try {
+      setIsDownloading(true);
+      await downloadInvoicePdf(parseInt(userId), invoice.id);
+    } catch (error) {
+      console.error("Failed to download invoice PDF:", error);
+      alert("Failed to download invoice PDF. Please try again.");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -44,11 +57,11 @@ const InvoiceCard = ({ invoice }: InvoiceCardProps) => {
             size="sm"
             variant="outline"
             onClick={handleDownload}
-            disabled={!invoice.pdfUrl || invoice.pdfUrl === "#"}
+            disabled={isDownloading}
             className="gap-2"
           >
             <Download className="h-4 w-4" />
-            PDF
+            {isDownloading ? "Downloading..." : "PDF"}
           </Button>
         </div>
       </CardHeader>
