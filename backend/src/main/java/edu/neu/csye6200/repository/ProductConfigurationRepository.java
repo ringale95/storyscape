@@ -3,6 +3,7 @@ package edu.neu.csye6200.repository;
 import edu.neu.csye6200.entity.Product;
 import edu.neu.csye6200.entity.ProductConfiguration;
 import edu.neu.csye6200.entity.Tier;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,4 +39,10 @@ public interface ProductConfigurationRepository extends JpaRepository<ProductCon
          * Find all product configurations for a specific product
          */
         List<ProductConfiguration> findByProduct(Product product);
+
+        @Query("SELECT DISTINCT pc FROM ProductConfiguration pc " +
+                        "JOIN FETCH pc.payment p " +
+                        "WHERE pc.product = :product AND pc.tier = :tier AND TYPE(p) = Subscription")
+        Optional<ProductConfiguration> findSubscribableProductConfiguration(@Param("tier") Tier tier,
+                        @Param("product") Product product);
 }

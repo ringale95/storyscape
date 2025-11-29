@@ -2,6 +2,9 @@ package edu.neu.csye6200.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Map;
+
+import edu.neu.csye6200.dto.ProductAccessDTO;
 
 @Entity
 @Table(name = "products")
@@ -91,4 +94,5 @@ public class Product {
                 ", name='" + name + '\'' +
                 '}';
     }
+
 }

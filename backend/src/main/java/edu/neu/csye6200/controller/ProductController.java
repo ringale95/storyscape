@@ -1,5 +1,6 @@
 package edu.neu.csye6200.controller;
 
+import edu.neu.csye6200.dto.ProductAccessDTO;
 import edu.neu.csye6200.dto.ProductActionDTO;
 import edu.neu.csye6200.dto.ProductDTO;
 import edu.neu.csye6200.service.ProductService;
@@ -10,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * REST Controller for Product Catalog Management
@@ -102,5 +104,15 @@ public class ProductController {
         productService.processProductAction(dto.getUserId(), id, dto.getStoryId());
 
         return ResponseEntity.status(HttpStatus.OK).body("Product action processed successfully");
+    }
+
+    @GetMapping("/{id}/access")
+    public ResponseEntity<Map<String, Object>> getProductAccess(@PathVariable Long id, @RequestBody ProductAccessDTO dto) {
+        try {
+            Map<String, Object> access = productService.getProductAccess(id, dto);
+            return ResponseEntity.ok(access);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
+        }
     }
 }

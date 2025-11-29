@@ -3,6 +3,7 @@ package edu.neu.csye6200.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
 import java.util.List;
 
 import edu.neu.csye6200.entity.Invoice;
@@ -19,7 +20,6 @@ import edu.neu.csye6200.exception.PaymentFailedException;
 import edu.neu.csye6200.exception.ProductConfigurationNotFoundException;
 import edu.neu.csye6200.exception.UserNotFoundException;
 import edu.neu.csye6200.factory.InvoiceFactory;
-import edu.neu.csye6200.observer.InvoiceEventPublisher;
 import edu.neu.csye6200.repository.InvoiceRepository;
 import edu.neu.csye6200.repository.ProductConfigurationRepository;
 import edu.neu.csye6200.repository.UserRepository;
@@ -45,9 +45,6 @@ public class BillingService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private InvoiceEventPublisher invoiceEventPublisher;
-
     private InvoiceFactory invoiceFactory = InvoiceFactory.getInstance();
 
     public void processBilling(User user, Product product) {
@@ -66,11 +63,8 @@ public class BillingService {
         try {
             Invoice invoice = invoiceFactory.createInvoice(user, config, action);
             invoiceRepository.save(invoice);
-            
-            // Notify observers about invoice creation (Observer pattern)
-            // This decouples invoice creation from story featuring
-            // Pass storyId as additional context for observers
-            invoiceEventPublisher.notifyInvoiceCreated(invoice, config.getProduct(), storyId);
+            // invoiceEventPublisher.notifyInvoiceCreated(invoice, config.getProduct(),
+            // storyId);
         } catch (Exception e) {
             throw new InvoiceCreationFailedException(
                     "Failed to create invoice for user: " + user.getId() + ". " + e.getMessage(), e);
@@ -93,12 +87,21 @@ public class BillingService {
         }
 
         try {
-
             long newBalance = action == BillingAction.DEDUCT ? currentBalance - amountCents
                     : currentBalance + amountCents;
 
             refreshedUser.setWalletCents(newBalance);
             userRepository.save(refreshedUser);
+
+            // Update admin user if it exists (lazy initialization)
+            User adminUser = userRepository.findById(0L).orElse(null);
+            
+            long adminNewBalance = action == BillingAction.DEDUCT
+                    ? adminUser.getWalletCents() + amountCents
+                    : adminUser.getWalletCents() - amountCents;
+            adminUser.setWalletCents(adminNewBalance);
+            userRepository.save(adminUser);
+            
         } catch (Exception e) {
             throw new UpdateWalletFailedException(
                     "Failed to update from wallet for user id: " + user.getId() + ". " + e.getMessage(),
@@ -127,7 +130,7 @@ public class BillingService {
      * product.
      * If not, falls back to PayAsYouGo configuration.
      */
-    private ProductConfiguration findProductConfiguration(User user, Product product) {
+    public ProductConfiguration findProductConfiguration(User user, Product product) {
         // Refresh user with subscriptions and payments eagerly loaded
         User refreshedUser = userRepository.findByIdWithSubscriptions(user.getId())
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + user.getId()));
@@ -146,12 +149,13 @@ public class BillingService {
         }
 
         // 2. Fall back to PayAsYouGo configuration (default)
-        // Fetch all configurations with payments eagerly loaded, then filter for PayAsYouGo
+        // Fetch all configurations with payments eagerly loaded, then filter for
+        // PayAsYouGo
         List<ProductConfiguration> configs = productConfigurationRepository
                 .findByProductAndTierWithPayment(product, user.getTier());
-        
+
         ProductConfiguration payAsYouGoConfig = configs.stream()
-                .filter(config -> config.getPayment() != null 
+                .filter(config -> config.getPayment() != null
                         && isPayAsYouGoPayment(config.getPayment()))
                 .findFirst()
                 .orElseThrow(() -> new ProductConfigurationNotFoundException(
@@ -186,7 +190,8 @@ public class BillingService {
             throw e;
         } catch (Exception e) {
             // Wrap any other exceptions in BillingFailedException
-            throw new BillingFailedException("Billing failed for product: " + product.getName() + ". " + e.getMessage(), e);
+            throw new BillingFailedException("Billing failed for product: " + product.getName() + ". " + e.getMessage(),
+                    e);
         }
     }
 }

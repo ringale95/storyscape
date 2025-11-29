@@ -5,10 +5,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import edu.neu.csye6200.dto.ProductAccessDTO;
 import edu.neu.csye6200.dto.UpdateUserDTO;
 import edu.neu.csye6200.dto.UserProfileDTO;
 import edu.neu.csye6200.entity.User;
@@ -37,6 +39,15 @@ public class UserController {
         try {
             User updatedUser = userService.updateUser(id, updateUserDTO);
             return ResponseEntity.ok(new UserProfileDTO(updatedUser));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/subscriptions")
+    public ResponseEntity<?> addSubscription(@PathVariable Long id, @RequestBody ProductAccessDTO dto) {
+        try {
+            return ResponseEntity.ok(userService.addSubscription(id, dto));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
