@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "@/components/NavLink";
-import { Menu, X, BookOpen, LogOut } from "lucide-react";
+import { Menu, X, BookOpen, LogOut, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface HeaderProps {
@@ -54,6 +54,22 @@ const Header = ({ userId = 2 }: HeaderProps) => {
               {link.label}
             </NavLink>
           ))}
+          {/* Member only Content - Premium Styled */}
+          <Link
+            to="#"
+            className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-white font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
+            onClick={(e) => {
+              e.preventDefault();
+              toast({
+                title: "Member Only Content",
+                description: "This is exclusive content for members only!",
+              });
+            }}
+          >
+            <Crown className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+            <span>Member only Content</span>
+            <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-400 opacity-0 group-hover:opacity-20 transition-opacity"></div>
+          </Link>
           <Button
             variant="ghost"
             size="sm"
@@ -94,6 +110,22 @@ const Header = ({ userId = 2 }: HeaderProps) => {
                 {link.label}
               </NavLink>
             ))}
+            {/* Member only Content - Premium Styled (Mobile) */}
+            <Link
+              to="#"
+              className="flex items-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-white font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-300 group"
+              onClick={(e) => {
+                e.preventDefault();
+                setMobileMenuOpen(false);
+                toast({
+                  title: "Member Only Content",
+                  description: "This is exclusive content for members only!",
+                });
+              }}
+            >
+              <Crown className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+              <span>Member only Content</span>
+            </Link>
             <Button
               variant="ghost"
               size="sm"

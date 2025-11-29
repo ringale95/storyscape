@@ -32,7 +32,12 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/register", "/api/login","/api/products","/api/product","/api/subscription","/api/subscriptions/user/{userId}").permitAll()
+                        .requestMatchers("/api/register", "/api/login", "/api/products", "/api/product",
+                                "/api/subscription", "/api/subscriptions/user/{userId}")
+                        .permitAll()
+                        .requestMatchers("/auth/register", "/auth/login").permitAll()
+                        .requestMatchers("/api/stories", "/api/stories/**").permitAll()
+                        .requestMatchers("/api/feed", "/api/feed/**").permitAll()
                         .anyRequest().authenticated())
 
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

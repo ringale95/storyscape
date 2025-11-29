@@ -12,14 +12,17 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Relationship to User
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Reference to subscription
-    @Column(name = "subscription_id", nullable = false)
-    private Long subscriptionId;
+    // Payment information stored directly (immutable snapshot)
+    // payment_id stored as reference ID (not foreign key) for historical reference
+    @Column(name = "payment_id")
+    private Long paymentId;
+
+    @Column(name = "payment_type", length = 20)
+    private String paymentType; // "SUBSCRIPTION" or "PAYG"
 
     @Column(name = "date_from", nullable = false)
     private LocalDate dateFrom;
@@ -28,18 +31,14 @@ public class Invoice {
     private LocalDate dateTo;
 
     @Column(nullable = false)
-    private Double amount;
+    private long amount;
 
     @Column(length = 255)
     private String description;
 
-    @Column(name = "pdf_url")
-    private String pdfUrl;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    // Only updated automatically on update events
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
@@ -59,29 +58,20 @@ public class Invoice {
     public Invoice() {
     }
 
-    public Invoice(Long subscriptionId, LocalDate dateFrom, LocalDate dateTo,
-            Double amount, String description, String pdfUrl) {
-
-        this.subscriptionId = subscriptionId;
+    public Invoice(User user, Long paymentId, String paymentType, LocalDate dateFrom, LocalDate dateTo, long amount,
+            String description) {
+        this.user = user;
+        this.paymentId = paymentId;
+        this.paymentType = paymentType;
         this.dateFrom = dateFrom;
         this.dateTo = dateTo;
         this.amount = amount;
         this.description = description;
-        this.pdfUrl = pdfUrl;
     }
 
     // Getters and Setters
-
     public Long getId() {
         return id;
-    }
-
-    public Long getSubscriptionId() {
-        return subscriptionId;
-    }
-
-    public void setSubscriptionId(Long subscriptionId) {
-        this.subscriptionId = subscriptionId;
     }
 
     public LocalDate getDateFrom() {
@@ -100,20 +90,12 @@ public class Invoice {
         this.dateTo = dateTo;
     }
 
-    public Double getAmount() {
+    public long getAmount() {
         return amount;
     }
 
-    public void setAmount(Double amount) {
+    public void setAmount(long amount) {
         this.amount = amount;
-    }
-
-    public String getPdfUrl() {
-        return pdfUrl;
-    }
-
-    public void setPdfUrl(String pdfUrl) {
-        this.pdfUrl = pdfUrl;
     }
 
     public String getDescription() {
@@ -138,5 +120,21 @@ public class Invoice {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Long getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(Long paymentId) {
+        this.paymentId = paymentId;
+    }
+
+    public String getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(String paymentType) {
+        this.paymentType = paymentType;
     }
 }

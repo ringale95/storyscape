@@ -14,7 +14,8 @@ import edu.neu.csye6200.dto.UserRegisterDTO;
 @Table(name = "users", indexes = { @Index(name = "idx_user_email", columnList = "email") })
 public class User {
 
-    public User() {}
+    public User() {
+    }
 
     public User(UserRegisterDTO dto, String hashedPassword) {
         this.firstName = dto.getFirstName();
@@ -27,7 +28,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Column(name = "first_name", nullable = false, length = 50)
     private String firstName;
@@ -71,22 +72,27 @@ public class User {
     private Long walletCents = 0L;
 
     // ================================
-    //   INVOICES RELATIONSHIP
+    // INVOICES RELATIONSHIP
     // ================================
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private List<Invoice> invoices = new ArrayList<>();
 
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_subscriptions", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "product_configuration_id"))
+    @ToString.Exclude
+    private List<ProductConfiguration> subscriptions = new ArrayList<>();
+
     // ================================
-    //   GETTERS & SETTERS
+    // GETTERS & SETTERS
     // ================================
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -114,6 +120,10 @@ public class User {
         this.email = email;
     }
 
+    public String getUsername() {
+        return this.email;  // Use email as username
+    }
+
     public String getPasswordHash() {
         return passwordHash;
     }
@@ -125,7 +135,7 @@ public class User {
     public Long getWalletCents() {
         return walletCents;
     }
-    
+
     public void setWalletCents(Long walletCents) {
         this.walletCents = walletCents;
     }
@@ -210,16 +220,39 @@ public class User {
         invoices.remove(invoice);
     }
 
+    public List<ProductConfiguration> getSubscriptions() {
+        return subscriptions;
+    }
+
+    public void setSubscriptions(List<ProductConfiguration> subscriptions) {
+        this.subscriptions = subscriptions;
+    }
+
+    public void addSubscription(ProductConfiguration productConfiguration) {
+        if (!subscriptions.contains(productConfiguration)) {
+            subscriptions.add(productConfiguration);
+        }
+    }
+
+    public void removeSubscription(ProductConfiguration productConfiguration) {
+        subscriptions.remove(productConfiguration);
+    }
+
     // ================================
-    //   LIFECYCLE HOOKS
+    // LIFECYCLE HOOKS
     // ================================
     @PrePersist
     protected void onCreate() {
-        if (this.tier == null) this.tier = Tier.NORMAL;
-        if (this.status == null) this.status = "ACTIVE";
-        if (this.followersCount == null) this.followersCount = 0;
-        if (this.followingCount == null) this.followingCount = 0;
-        if (this.createdAt == null) this.createdAt = LocalDateTime.now();
+        if (this.tier == null)
+            this.tier = Tier.NORMAL;
+        if (this.status == null)
+            this.status = "ACTIVE";
+        if (this.followersCount == null)
+            this.followersCount = 0;
+        if (this.followingCount == null)
+            this.followingCount = 0;
+        if (this.createdAt == null)
+            this.createdAt = LocalDateTime.now();
         this.updatedAt = this.createdAt;
     }
 

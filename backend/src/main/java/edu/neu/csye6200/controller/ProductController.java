@@ -1,5 +1,6 @@
 package edu.neu.csye6200.controller;
 
+import edu.neu.csye6200.dto.ProductActionDTO;
 import edu.neu.csye6200.dto.ProductDTO;
 import edu.neu.csye6200.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ import java.util.List;
  * Handles all product-related operations
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/products")
 public class ProductController {
 
     @Autowired
@@ -25,7 +26,7 @@ public class ProductController {
      * GET /api/products - Get all active products
      * Available to all authenticated users
      */
-    @GetMapping("/products")
+    @GetMapping
     public ResponseEntity<List<ProductDTO>> getAllProducts() {
         try {
             List<ProductDTO> products = productService.getAllProducts();
@@ -39,7 +40,7 @@ public class ProductController {
      * GET /api/products/{id} - Get product by ID
      * Available to all authenticated users
      */
-    @GetMapping("/products/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<?> getProductById(@PathVariable Long id) {
         try {
             ProductDTO product = productService.getProductById(id);
@@ -57,8 +58,8 @@ public class ProductController {
      * POST /api/product - Create a new product
      * Admin only
      */
-    @PostMapping("/product")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping()
+    // @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createProduct(@RequestBody ProductDTO productDTO) {
         try {
             ProductDTO createdProduct = productService.createProduct(productDTO);
@@ -76,10 +77,10 @@ public class ProductController {
      * PUT /api/product/{id} - Update an existing product
      * Admin only
      */
-    @PutMapping("/product/{id}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateProduct(@PathVariable Long id, 
-                                          @RequestBody ProductDTO productDTO) {
+    public ResponseEntity<?> updateProduct(@PathVariable Long id,
+            @RequestBody ProductDTO productDTO) {
         try {
             ProductDTO updatedProduct = productService.updateProduct(id, productDTO);
             return ResponseEntity.ok(updatedProduct);
@@ -92,60 +93,14 @@ public class ProductController {
         }
     }
 
-    /**
-     * DELETE /api/product/{id} - Delete a product (soft delete)
-     * Admin only
-     */
-    @DeleteMapping("/product/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
-        try {
-            productService.deleteProduct(id);
-            return ResponseEntity.ok("Product deleted successfully");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while deleting the product");
-        }
-    }
+    @PostMapping("/{id}/action")
+    public ResponseEntity<String> processProductAction(
+            @PathVariable Long id,
+            @RequestBody ProductActionDTO dto) {
 
-    /**
-     * PUT /api/product/{id}/activate - Activate a product
-     * Admin only
-     */
-    @PutMapping("/product/{id}/activate")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> activateProduct(@PathVariable Long id) {
-        try {
-            ProductDTO activatedProduct = productService.activateProduct(id);
-            return ResponseEntity.ok(activatedProduct);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while activating the product");
-        }
-    }
+        // Exceptions are handled by GlobalExceptionHandler
+        productService.processProductAction(dto.getUserId(), id, dto.getStoryId());
 
-    /**
-     * PUT /api/product/{id}/deactivate - Deactivate a product
-     * Admin only
-     */
-    @PutMapping("/product/{id}/deactivate")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deactivateProduct(@PathVariable Long id) {
-        try {
-            ProductDTO deactivatedProduct = productService.deactivateProduct(id);
-            return ResponseEntity.ok(deactivatedProduct);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while deactivating the product");
-        }
+        return ResponseEntity.status(HttpStatus.OK).body("Product action processed successfully");
     }
 }

@@ -1,13 +1,16 @@
 package edu.neu.csye6200.service;
 
 import edu.neu.csye6200.dto.ProductDTO;
-import edu.neu.csye6200.entity.Tier;
+import edu.neu.csye6200.entity.Product;
+import edu.neu.csye6200.entity.User;
+import edu.neu.csye6200.exception.BillingFailedException;
+import edu.neu.csye6200.exception.UserNotFoundException;
 import edu.neu.csye6200.factory.ProductFactory;
 import edu.neu.csye6200.repository.ProductRepository;
+import edu.neu.csye6200.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import edu.neu.csye6200.entity.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,11 +24,17 @@ public class ProductService {
     @Autowired
     private ProductFactory productFactory;
 
+    @Autowired
+    private BillingService billingService;
+
+    @Autowired
+    private UserRepository userRepository;
+
     /**
-     * Get all active products
+     * Get all products
      */
     public List<ProductDTO> getAllProducts() {
-        List<Product> products = productRepository.findByIsActiveTrueAndStatus(ProductStatus.ACTIVE);
+        List<Product> products = productRepository.findAll();
         return products.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -35,20 +44,9 @@ public class ProductService {
      * Get product by ID
      */
     public ProductDTO getProductById(Long id) {
-        Product product = productRepository.findByIdAndIsActiveTrue(id)
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + id));
         return convertToDTO(product);
-    }
-
-    /**
-     * Get products available for a specific tier
-     */
-    public List<ProductDTO> getProductsForTier(Tier tier) {
-        List<Product> products = productRepository.findByIsActiveTrueAndStatus(ProductStatus.ACTIVE);
-        return products.stream()
-                .filter(p -> p.getTier() == null || p.getTier().equals(tier))
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
     }
 
     /**
@@ -57,10 +55,10 @@ public class ProductService {
     @Transactional
     public ProductDTO createProduct(ProductDTO productDTO) {
         validateProductDTO(productDTO);
-        
+
         Product product = productFactory.createProduct(productDTO);
         Product savedProduct = productRepository.save(product);
-        
+
         return convertToDTO(savedProduct);
     }
 
@@ -74,72 +72,57 @@ public class ProductService {
 
         validateProductDTO(productDTO);
         updateProductFromDTO(existingProduct, productDTO);
-        
+
         Product updatedProduct = productRepository.save(existingProduct);
         return convertToDTO(updatedProduct);
     }
 
-    /**
-     * Delete a product (soft delete)
-     */
     @Transactional
-    public void deleteProduct(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + id));
-        
-        product.setIsActive(false);
-        product.setStatus(ProductStatus.DISCONTINUED);
-        productRepository.save(product);
+    public void processProductAction(Long userId, Long productId, Long storyId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID is required");
+        }
+        if (productId == null) {
+            throw new IllegalArgumentException("Product ID is required");
+        }
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + productId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+        try {
+            // Process billing (pass storyId for context)
+            billingService.processBilling(user, product, storyId);
+        } catch (BillingFailedException e) {
+            billingService.rollbackBilling(user, product);
+            throw e;
+        }
+
+        try {
+            // Perform the actual product action (e.g., feature the story)
+            this.performProductAction(user, product);
+        } catch (Exception e) {
+            billingService.rollbackBilling(user, product);
+            throw new RuntimeException("Product action failed: " + e.getMessage(), e);
+        }
     }
 
     /**
-     * Activate a product
+     * Perform the actual product action based on product
+     * This method can be extended to handle different product types
      */
-    @Transactional
-    public ProductDTO activateProduct(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + id));
-        
-        product.setIsActive(true);
-        product.setStatus(ProductStatus.ACTIVE);
-        Product updatedProduct = productRepository.save(product);
-        
-        return convertToDTO(updatedProduct);
-    }
-
-    /**
-     * Deactivate a product
-     */
-    @Transactional
-    public ProductDTO deactivateProduct(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + id));
-        
-        product.setIsActive(false);
-        product.setStatus(ProductStatus.INACTIVE);
-        Product updatedProduct = productRepository.save(product);
-        
-        return convertToDTO(updatedProduct);
+    private void performProductAction(User user, Product product) {
+        // Product-specific actions are handled by observers (e.g.,
+        // StoryFeaturingObserver)
+        // This method can be extended for direct actions if needed
     }
 
     // Helper Methods
     private void validateProductDTO(ProductDTO productDTO) {
         if (productDTO.getName() == null || productDTO.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Product name is required");
-        }
-        if (productDTO.getProductType() == null) {
-            throw new IllegalArgumentException("Product type is required");
-        }
-        if (productDTO.getPrice() == null || productDTO.getPrice().signum() < 0) {
-            throw new IllegalArgumentException("Valid product price is required");
-        }
-        
-        // Validate revenue percentages for member-only content
-        if (productDTO.getProductType().name().equals("MEMBER_ONLY")) {
-            if (productDTO.getWriterRevenuePercentage() == null || 
-                productDTO.getCompanyRevenuePercentage() == null) {
-                throw new IllegalArgumentException("Revenue percentages are required for member-only content");
-            }
         }
     }
 
@@ -150,21 +133,6 @@ public class ProductService {
         if (productDTO.getDescription() != null) {
             product.setDescription(productDTO.getDescription());
         }
-        if (productDTO.getPrice() != null) {
-            product.setPrice(productDTO.getPrice());
-        }
-        if (productDTO.getPostLimit() != null) {
-            product.setPostLimit(productDTO.getPostLimit());
-        }
-        if (productDTO.getWriterRevenuePercentage() != null) {
-            product.setWriterRevenuePercentage(productDTO.getWriterRevenuePercentage());
-        }
-        if (productDTO.getCompanyRevenuePercentage() != null) {
-            product.setCompanyRevenuePercentage(productDTO.getCompanyRevenuePercentage());
-        }
-        if (productDTO.getStatus() != null) {
-            product.setStatus(productDTO.getStatus());
-        }
     }
 
     private ProductDTO convertToDTO(Product product) {
@@ -172,21 +140,7 @@ public class ProductService {
         dto.setId(product.getId());
         dto.setName(product.getName());
         dto.setDescription(product.getDescription());
-        dto.setProductType(product.getProductType());
-        dto.setPrice(product.getPrice());
-        dto.setPostLimit(product.getPostLimit());
-        dto.setWriterRevenuePercentage(product.getWriterRevenuePercentage());
-        dto.setCompanyRevenuePercentage(product.getCompanyRevenuePercentage());
-        dto.setStatus(product.getStatus());
-        dto.setIsActive(product.getIsActive());
-        
-        // Handle Tier enum - store tier name if present
-        if (product.getTier() != null) {
-            // Since ProductDTO.tierId is Long, we'll skip it
-            // Or you can change ProductDTO to have String tierName instead
-            dto.setTierId(null); 
-        }
-        
+
         return dto;
     }
 }
