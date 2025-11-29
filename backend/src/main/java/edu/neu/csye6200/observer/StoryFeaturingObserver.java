@@ -8,36 +8,38 @@ import org.springframework.stereotype.Component;
 import edu.neu.csye6200.service.StoryService;
 
 /**
- * Observer that features a story when an invoice is created for FeaturedPost product.
- * This implements the Observer pattern to decouple invoice creation from story featuring.
+ * Observer that features a story when an invoice is created for FeaturedPost
+ * product.
+ * This implements the Observer pattern to decouple invoice creation from story
+ * featuring.
  */
 @Component
 public class StoryFeaturingObserver implements InvoiceObserver {
-    
+
     @Autowired
     private StoryService storyService;
-    
+
     @Override
-    public void onInvoiceCreated(Invoice invoice, String productName, Long storyId) {
+    public void onInvoiceCreated(Invoice invoice, edu.neu.csye6200.entity.Product product, Long storyId) {
         // Only feature stories for FeaturedPost product
-        if (!"FeaturedPost".equalsIgnoreCase(productName)) {
+        if (product == null || !"FeaturedPost".equalsIgnoreCase(product.getName())) {
             return;
         }
-        
+
         try {
             User user = invoice.getUser();
             if (user == null) {
                 System.err.println("Cannot feature story: Invoice has no associated user");
                 return;
             }
-            
-            // Feature the specified story, or user's most recent story if storyId is not provided
+
+            // Feature the specified story, or user's most recent story if storyId is not
+            // provided
             storyService.featureStory(storyId);
         } catch (Exception e) {
             // Log error but don't fail the invoice creation process
-            System.err.println("Failed to feature story for invoice " + invoice.getId() + 
-                             ": " + e.getMessage());
+            System.err.println("Failed to feature story for invoice " + invoice.getId() +
+                    ": " + e.getMessage());
         }
     }
 }
-

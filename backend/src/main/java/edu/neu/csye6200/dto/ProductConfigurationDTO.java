@@ -1,25 +1,25 @@
 package edu.neu.csye6200.dto;
 
 public class ProductConfigurationDTO {
-    private String productName;
+    private Long productId; // Product ID instead of productName
     private String tier; // "NORMAL", "CORE", or "PRO"
     private Long paymentId;
 
     public ProductConfigurationDTO() {
     }
 
-    public ProductConfigurationDTO(String productName, String tier, Long paymentId) {
-        this.productName = productName;
+    public ProductConfigurationDTO(Long productId, String tier, Long paymentId) {
+        this.productId = productId;
         this.tier = tier;
         this.paymentId = paymentId;
     }
 
-    public String getProductName() {
-        return productName;
+    public Long getProductId() {
+        return productId;
     }
 
-    public void setProductName(String productName) {
-        this.productName = productName;
+    public void setProductId(Long productId) {
+        this.productId = productId;
     }
 
     public String getTier() {

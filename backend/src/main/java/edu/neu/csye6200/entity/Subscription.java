@@ -32,4 +32,3 @@ public class Subscription extends Payment {
         this.subscriptionCost = subscriptionCost;
     }
 }
-

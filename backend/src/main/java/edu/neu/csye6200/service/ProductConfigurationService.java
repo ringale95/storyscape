@@ -5,10 +5,12 @@ import org.springframework.stereotype.Service;
 
 import edu.neu.csye6200.dto.ProductConfigurationDTO;
 import edu.neu.csye6200.entity.Payment;
+import edu.neu.csye6200.entity.Product;
 import edu.neu.csye6200.entity.ProductConfiguration;
 import edu.neu.csye6200.entity.Tier;
 import edu.neu.csye6200.repository.PaymentRepository;
 import edu.neu.csye6200.repository.ProductConfigurationRepository;
+import edu.neu.csye6200.repository.ProductRepository;
 
 import java.util.List;
 
@@ -21,10 +23,20 @@ public class ProductConfigurationService {
     @Autowired
     private PaymentRepository paymentRepository;
 
+    @Autowired
+    private ProductRepository productRepository;
+
     /**
      * Create a new product configuration
      */
     public ProductConfiguration createProductConfiguration(ProductConfigurationDTO dto) {
+        // Validate product exists
+        if (dto.getProductId() == null) {
+            throw new IllegalArgumentException("Product ID is required");
+        }
+        Product product = productRepository.findById(dto.getProductId())
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + dto.getProductId()));
+
         // Validate payment exists
         Payment payment = paymentRepository.findById(dto.getPaymentId())
                 .orElseThrow(() -> new RuntimeException("Payment not found with id: " + dto.getPaymentId()));
@@ -39,7 +51,7 @@ public class ProductConfigurationService {
 
         // Create and save
         ProductConfiguration productConfiguration = new ProductConfiguration(
-                dto.getProductName(),
+                product,
                 tier,
                 payment);
 
@@ -69,9 +81,11 @@ public class ProductConfigurationService {
         ProductConfiguration existingConfig = productConfigurationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("ProductConfiguration not found with id: " + id));
 
-        // Update product name only if provided
-        if (dto.getProductName() != null) {
-            existingConfig.setProductName(dto.getProductName());
+        // Update product only if provided
+        if (dto.getProductId() != null) {
+            Product product = productRepository.findById(dto.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found with id: " + dto.getProductId()));
+            existingConfig.setProduct(product);
         }
 
         // Update tier only if provided

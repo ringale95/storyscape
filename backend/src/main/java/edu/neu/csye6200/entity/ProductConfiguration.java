@@ -1,15 +1,23 @@
 package edu.neu.csye6200.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
+@Table(name = "product_configuration")
 public class ProductConfiguration {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "product_name", nullable = false)
-    private String productName;
+
+    // Many-to-One relationship with Product
+    // Each ProductConfiguration belongs to one Product
+    // Each Product can have multiple ProductConfigurations
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+    private Product product;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -24,8 +32,8 @@ public class ProductConfiguration {
     public ProductConfiguration() {
     }
 
-    public ProductConfiguration(String productName, Tier tier, Payment payment) {
-        this.productName = productName;
+    public ProductConfiguration(Product product, Tier tier, Payment payment) {
+        this.product = product;
         this.tier = tier;
         this.payment = payment;
     }
@@ -39,12 +47,12 @@ public class ProductConfiguration {
         this.id = id;
     }
 
-    public String getProductName() {
-        return productName;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setProductName(String productName) {
-        this.productName = productName;
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public Tier getTier() {
@@ -63,4 +71,3 @@ public class ProductConfiguration {
         this.payment = payment;
     }
 }
-

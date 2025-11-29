@@ -1,6 +1,8 @@
 package edu.neu.csye6200.observer;
 
 import edu.neu.csye6200.entity.Invoice;
+import edu.neu.csye6200.entity.Product;
+
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -39,13 +41,13 @@ public class InvoiceEventPublisher {
      * Notify all registered observers that an invoice was created.
      * 
      * @param invoice The invoice that was created
-     * @param productName The product name associated with the invoice
+     * @param product The product associated with the invoice
      * @param storyId Optional story ID for product-specific actions
      */
-    public void notifyInvoiceCreated(Invoice invoice, String productName, Long storyId) {
+    public void notifyInvoiceCreated(Invoice invoice, Product product, Long storyId) {
         for (InvoiceObserver observer : observers) {
             try {
-                observer.onInvoiceCreated(invoice, productName, storyId);
+                observer.onInvoiceCreated(invoice, product, storyId);
             } catch (Exception e) {
                 // Log error but don't fail the invoice creation
                 System.err.println("Error notifying observer: " + observer.getClass().getName() + 

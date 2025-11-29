@@ -7,6 +7,7 @@ import java.util.List;
 
 import edu.neu.csye6200.entity.Invoice;
 import edu.neu.csye6200.entity.Payment;
+import edu.neu.csye6200.entity.Product;
 import edu.neu.csye6200.entity.PayAsYouGo;
 import edu.neu.csye6200.entity.ProductConfiguration;
 import edu.neu.csye6200.entity.Subscription;
@@ -49,16 +50,16 @@ public class BillingService {
 
     private InvoiceFactory invoiceFactory = InvoiceFactory.getInstance();
 
-    public void processBilling(User user, String productName) {
-        processBilling(user, productName, null);
+    public void processBilling(User user, Product product) {
+        processBilling(user, product, null);
     }
 
-    public void processBilling(User user, String productName, Long storyId) {
-        processBilling(user, productName, storyId, BillingAction.DEDUCT);
+    public void processBilling(User user, Product product, Long storyId) {
+        processBilling(user, product, storyId, BillingAction.DEDUCT);
     }
 
-    public void rollbackBilling(User user, String productName) {
-        processBilling(user, productName, null, BillingAction.CREDIT);
+    public void rollbackBilling(User user, Product product) {
+        processBilling(user, product, null, BillingAction.CREDIT);
     }
 
     private void createInvoice(User user, ProductConfiguration config, BillingAction action, Long storyId) {
@@ -69,7 +70,7 @@ public class BillingService {
             // Notify observers about invoice creation (Observer pattern)
             // This decouples invoice creation from story featuring
             // Pass storyId as additional context for observers
-            invoiceEventPublisher.notifyInvoiceCreated(invoice, config.getProductName(), storyId);
+            invoiceEventPublisher.notifyInvoiceCreated(invoice, config.getProduct(), storyId);
         } catch (Exception e) {
             throw new InvoiceCreationFailedException(
                     "Failed to create invoice for user: " + user.getId() + ". " + e.getMessage(), e);
@@ -126,14 +127,14 @@ public class BillingService {
      * product.
      * If not, falls back to PayAsYouGo configuration.
      */
-    private ProductConfiguration findProductConfiguration(User user, String productName) {
+    private ProductConfiguration findProductConfiguration(User user, Product product) {
         // Refresh user with subscriptions and payments eagerly loaded
         User refreshedUser = userRepository.findByIdWithSubscriptions(user.getId())
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + user.getId()));
 
         // 1. Check if user has a subscription ProductConfiguration for this product
         ProductConfiguration subscriptionConfig = refreshedUser.getSubscriptions().stream()
-                .filter(config -> config.getProductName().equals(productName)
+                .filter(config -> config.getProduct().getName().equals(product.getName())
                         && config.getTier().equals(user.getTier())
                         && config.getPayment() != null
                         && isSubscriptionPayment(config.getPayment()))
@@ -147,7 +148,7 @@ public class BillingService {
         // 2. Fall back to PayAsYouGo configuration (default)
         // Fetch all configurations with payments eagerly loaded, then filter for PayAsYouGo
         List<ProductConfiguration> configs = productConfigurationRepository
-                .findByProductNameAndTierWithPayment(productName, user.getTier());
+                .findByProductAndTierWithPayment(product, user.getTier());
         
         ProductConfiguration payAsYouGoConfig = configs.stream()
                 .filter(config -> config.getPayment() != null 
@@ -155,21 +156,21 @@ public class BillingService {
                 .findFirst()
                 .orElseThrow(() -> new ProductConfigurationNotFoundException(
                         "PayAsYouGo product configuration not found for product: "
-                                + productName + " and tier: " + user.getTier()));
+                                + product.getName() + " and tier: " + user.getTier()));
 
         return payAsYouGoConfig;
     }
 
-    private void processBilling(User user, String productName, Long storyId, BillingAction action) {
+    private void processBilling(User user, Product product, Long storyId, BillingAction action) {
         try {
             // 1. Find appropriate product configuration (subscription if available,
             // otherwise PayAsYouGo)
-            ProductConfiguration config = findProductConfiguration(user, productName);
+            ProductConfiguration config = findProductConfiguration(user, product);
 
             // 2. Get payment details
             Payment payment = config.getPayment();
             if (payment == null) {
-                throw new PaymentFailedException("Payment configuration not found for product: " + productName);
+                throw new PaymentFailedException("Payment configuration not found for product: " + product.getName());
             }
 
             long amountToDeduct = payment.getPriceCents();
@@ -185,7 +186,7 @@ public class BillingService {
             throw e;
         } catch (Exception e) {
             // Wrap any other exceptions in BillingFailedException
-            throw new BillingFailedException("Billing failed for product: " + productName + ". " + e.getMessage(), e);
+            throw new BillingFailedException("Billing failed for product: " + product.getName() + ". " + e.getMessage(), e);
         }
     }
 }

@@ -45,7 +45,7 @@ public class InvoiceFactory {
                 today,
                 today,
                 priceCents,
-                paymentType + " for " + config.getProductName());
+                paymentType + " for " + config.getProduct().getName());
     }
 
 }

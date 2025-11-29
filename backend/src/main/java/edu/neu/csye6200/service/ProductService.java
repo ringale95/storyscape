@@ -1,15 +1,28 @@
 package edu.neu.csye6200.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import edu.neu.csye6200.dto.ProductDTO;
+import edu.neu.csye6200.entity.Product;
 import edu.neu.csye6200.entity.User;
 import edu.neu.csye6200.exception.BillingFailedException;
 import edu.neu.csye6200.exception.UserNotFoundException;
+import edu.neu.csye6200.factory.ProductFactory;
+import edu.neu.csye6200.repository.ProductRepository;
 import edu.neu.csye6200.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private ProductFactory productFactory;
 
     @Autowired
     private BillingService billingService;
@@ -17,34 +30,117 @@ public class ProductService {
     @Autowired
     private UserRepository userRepository;
 
-    
-    public void processProductAction(Long userId, String productName, Long storyId) {
+    /**
+     * Get all products
+     */
+    public List<ProductDTO> getAllProducts() {
+        List<Product> products = productRepository.findAll();
+        return products.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get product by ID
+     */
+    public ProductDTO getProductById(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + id));
+        return convertToDTO(product);
+    }
+
+    /**
+     * Create a new product
+     */
+    @Transactional
+    public ProductDTO createProduct(ProductDTO productDTO) {
+        validateProductDTO(productDTO);
+
+        Product product = productFactory.createProduct(productDTO);
+        Product savedProduct = productRepository.save(product);
+
+        return convertToDTO(savedProduct);
+    }
+
+    /**
+     * Update an existing product
+     */
+    @Transactional
+    public ProductDTO updateProduct(Long id, ProductDTO productDTO) {
+        Product existingProduct = productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + id));
+
+        validateProductDTO(productDTO);
+        updateProductFromDTO(existingProduct, productDTO);
+
+        Product updatedProduct = productRepository.save(existingProduct);
+        return convertToDTO(updatedProduct);
+    }
+
+    @Transactional
+    public void processProductAction(Long userId, Long productId, Long storyId) {
         if (userId == null) {
             throw new IllegalArgumentException("User ID is required");
         }
-        if (productName == null || productName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Product name is required");
+        if (productId == null) {
+            throw new IllegalArgumentException("Product ID is required");
         }
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + productId));
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
         try {
             // Process billing (pass storyId for context)
-            billingService.processBilling(user, productName, storyId);
+            billingService.processBilling(user, product, storyId);
         } catch (BillingFailedException e) {
-            billingService.rollbackBilling(user, productName);
+            billingService.rollbackBilling(user, product);
             throw e;
         }
 
         try {
             // Perform the actual product action (e.g., feature the story)
-            this.performProductAction(user, productName);
+            this.performProductAction(user, product);
         } catch (Exception e) {
-            billingService.rollbackBilling(user, productName);
+            billingService.rollbackBilling(user, product);
             throw new RuntimeException("Product action failed: " + e.getMessage(), e);
         }
     }
 
-    private void performProductAction(User user, String productName) {
+    /**
+     * Perform the actual product action based on product
+     * This method can be extended to handle different product types
+     */
+    private void performProductAction(User user, Product product) {
+        // Product-specific actions are handled by observers (e.g.,
+        // StoryFeaturingObserver)
+        // This method can be extended for direct actions if needed
+    }
+
+    // Helper Methods
+    private void validateProductDTO(ProductDTO productDTO) {
+        if (productDTO.getName() == null || productDTO.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Product name is required");
+        }
+    }
+
+    private void updateProductFromDTO(Product product, ProductDTO productDTO) {
+        if (productDTO.getName() != null) {
+            product.setName(productDTO.getName());
+        }
+        if (productDTO.getDescription() != null) {
+            product.setDescription(productDTO.getDescription());
+        }
+    }
+
+    private ProductDTO convertToDTO(Product product) {
+        ProductDTO dto = new ProductDTO();
+        dto.setId(product.getId());
+        dto.setName(product.getName());
+        dto.setDescription(product.getDescription());
+
+        return dto;
     }
 }
